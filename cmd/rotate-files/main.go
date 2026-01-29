@@ -31,6 +31,7 @@ func main() {
 	logsDir := flag.String("log-dir", logsPathDefault, "set custom log dir")
 	logsToKeep := flag.Int("keep-logs", 7, "set number of logs to keep after rotation")
 	dirsToRotate := flag.String("d", "NONE", "REQUIRED, abs path of dir or dirs, separeted by coma")
+	filesToKeep := flag.Int("r", -1, "REQUIRED, most recent files to keep")
 
 	flag.Usage = func() {
 		fmt.Println("Go: Rotate Files")
@@ -67,11 +68,12 @@ func main() {
 
 	// rotate logs
 	logger.Info("Log rotation first", "logsDir", *logsDir, "logs to keep", *logsToKeep)
-	if err := vafswork.RotateFilesByMtime(*logsDir, *logsToKeep); err != nil {
+	if _, err := vafswork.RotateFilesByMtime(*logsDir, *logsToKeep); err != nil {
 		fmt.Fprintf(os.Stdout, "failed to rotate logs:\n\t%v", err)
 	}
 
 	// main code here
+	logger.Info("checking all REQUIRED flags are set")
 
 	// check if dirsToRotate flag(-d) is set
 	if *dirsToRotate == "NONE" {
@@ -79,10 +81,34 @@ func main() {
 		os.Exit(1)
 	}
 
+	// check if filesToRotate is positive int
+	if *filesToKeep == -1 {
+		logger.Error("flag '-r' is not set, exiting")
+		os.Exit(1)
+	}
+
+	logger.Info("all REQUIRED flags are set, moving on")
+
 	// getting slice of dirs
 	dirsToRotateList := strings.Split(*dirsToRotate, ",")
+
+	// iterating over dirsToRotateList for files rotation
+	logger.Info("starting file rotation process")
+
 	for _, dir := range dirsToRotateList {
-		fmt.Println(strings.Trim(dir, " "))
+		dirToRotate := strings.Trim(dir, " ")
+
+		logger.Info("now rotating files", "dir", dir, "filesToKeeep", *filesToKeep)
+
+		deletedFiles, err := vafswork.RotateFilesByMtime(dirToRotate, *filesToKeep)
+		if err != nil {
+			logger.Warn("failed rotating files, skipping dir", "dir", dir, "filesToKeeep", *filesToKeep, "err", err)
+		}
+
+		logger.Info("done rotating files", "dir", dir)
+		for _, file := range deletedFiles {
+			logger.Info("DELETED", "file", file)
+		}
 	}
 
 	// count & print estimated time
