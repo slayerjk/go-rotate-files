@@ -27,7 +27,7 @@ func main() {
 	logsDir := flag.String("log-dir", logsPathDefault, "set custom log dir")
 	logsToKeep := flag.Int("keep-logs", 7, "set number of logs to keep after rotation")
 	dirsToRotate := flag.String("d", "NONE", "REQUIRED, abs path of dir or dirs, separeted by coma")
-	filesToKeep := flag.Int("r", -1, "REQUIRED, most recent files to keep")
+	filesToKeep := flag.Int("r", -1, "REQUIRED, number of most recent files to keep")
 
 	flag.Usage = func() {
 		fmt.Println("Go: Rotate Files")
