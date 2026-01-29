@@ -8,11 +8,7 @@ import (
 	"strings"
 	"time"
 
-	// change this path for your project
-
 	vafswork "github.com/slayerjk/go-vafswork"
-	// mailing "github.com/slayerjk/go-mailing"
-	// vawebwork "github.com/slayerjk/go-vawebwork"
 )
 
 const (
